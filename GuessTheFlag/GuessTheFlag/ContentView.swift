@@ -5,6 +5,9 @@ struct ContentView: View {
     @State var correctAnswer = Int.random(in: 0...2)
     @State private var showingScore = false
     @State private var scoreTitle = ""
+    @State private var score: Int = 0
+    @State private var questionNumber: Int = 1
+    @State private var gameOver: Bool = false
     
     var body: some View {
         ZStack {
@@ -43,7 +46,9 @@ struct ContentView: View {
                 .clipShape(.rect(cornerRadius: 20))
                 Spacer()
                 Spacer()
-                Text("Score: ???")
+                Text("Question #\(questionNumber)")
+                    .foregroundStyle(.white)
+                Text("Score: \(score)")
                     .foregroundStyle(.white)
                     .font(.title.bold())
                 Spacer()
@@ -53,23 +58,41 @@ struct ContentView: View {
         .alert(scoreTitle, isPresented: $showingScore) {
             Button("Continue", action: askQuestion)
         } message: {
-            Text("Your score is ???")
+            Text("Your score is \(score)")
+        }
+        .alert("Game over", isPresented: $gameOver) {
+            Button("Restart", action: resetGame)
+        } message : {
+            Text("Your score was \(score)")
         }
     }
     
     func flagTapped(_ number: Int) {
         if number == correctAnswer {
             scoreTitle = "Correct"
+            score += 1
         }
         else {
-            scoreTitle = "Wrong"
+            scoreTitle = "Wrong, that's the flag of \(countries[number])"
+            score -= 1
         }
         showingScore = true
     }
     
     func askQuestion() {
-        countries.shuffle()
-        correctAnswer = Int.random(in: 0...2)
+        if questionNumber >= 8 {
+            gameOver = true
+        } else {
+            countries.shuffle()
+            correctAnswer = Int.random(in: 0...2)
+            questionNumber += 1
+        }
+    }
+    
+    func resetGame() {
+        score = 0
+        gameOver = false
+        questionNumber = 1
     }
 }
 
