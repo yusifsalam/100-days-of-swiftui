@@ -38,15 +38,26 @@ extension View {
     }
 }
 
+struct Prominent: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.largeTitle)
+            .foregroundStyle(.blue)
+    }
+}
+
+extension View {
+    func prominent() -> some View {
+        modifier(Prominent())
+    }
+}
+
 struct ContentView: View {
     var body: some View {
         ZStack {
-            Color.blue
             Text("Hello world")
-                .titleStyle()
+                .prominent()
         }
-        .frame(width: 300, height: 200)
-        .watermarked(with: "Hacking with Swift")
     }
 }
 
