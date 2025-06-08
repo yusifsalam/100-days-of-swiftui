@@ -31,6 +31,7 @@ struct ExpensesList: View {
 struct ContentView: View {
     @State private var expenses = Expenses()
     @State private var showingAddExpense = false
+    @State private var navigationTitle = "iExpense"
     
     
     var body: some View {
@@ -44,15 +45,16 @@ struct ContentView: View {
                 }
                 
             }
-            .navigationTitle("iExpense")
+            .navigationTitle($navigationTitle)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                Button("Add expense", systemImage: "plus") {
-                    showingAddExpense = true
+                NavigationLink {
+                    AddView(expenses: expenses)
+                        .navigationBarBackButtonHidden()
+                } label: {
+                    Label("Add expense", systemImage: "plus")
                 }
             }
-        }
-        .sheet(isPresented: $showingAddExpense) {
-            AddView(expenses: expenses)
         }
     }
     
