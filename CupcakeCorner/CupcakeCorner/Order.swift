@@ -1,5 +1,20 @@
 import SwiftUI
 
+struct ShippingAddress: Codable {
+    var name = ""
+    var streetAddress = ""
+    var city = ""
+    var zip = ""
+    
+    var isValid : Bool {
+        if name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || streetAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || city.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || zip.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return false
+        }
+
+        return true
+    }
+}
+
 @Observable
 class Order: Codable {
     
@@ -9,10 +24,8 @@ class Order: Codable {
         case _specialRequestEnabled = "specialRequestEnabled"
         case _extraFrosting = "extraFrosting"
         case _addSprinkles = "addSprinkles"
-        case _name = "name"
-        case _city = "city"
-        case _streetAddress = "streetAddress"
-        case _zip = "zip"
+        case _shippingAddress = "shippingAddress"
+      
     }
     
     static let types = ["Vanilla", "Strawberry", "Chocolate", "Rainbow"]
@@ -31,17 +44,16 @@ class Order: Codable {
     var extraFrosting = false
     var addSprinkles = false
     
-    var name = ""
-    var streetAddress = ""
-    var city = ""
-    var zip = ""
+    var shippingAddress: ShippingAddress {
+        didSet {
+            if let encoded = try? JSONEncoder().encode(shippingAddress) {
+                UserDefaults.standard.set(encoded, forKey: "shippingAddress")
+            }
+        }
+    }
     
     var hasValidAddress: Bool {
-        if name.isEmpty || streetAddress.isEmpty || city.isEmpty || zip.isEmpty {
-            return false
-        }
-
-        return true
+        return shippingAddress.isValid
     }
     
     var cost: Decimal {
@@ -62,5 +74,15 @@ class Order: Codable {
         }
 
         return cost
+    }
+    
+    init() {
+        if let shippingAddressData = UserDefaults.standard.data(forKey: "shippingAddress") {
+            if let decodedShippingAddress = try? JSONDecoder().decode(ShippingAddress.self, from: shippingAddressData) {
+                shippingAddress = decodedShippingAddress
+                return
+            }
+        }
+        shippingAddress = ShippingAddress()
     }
 }
