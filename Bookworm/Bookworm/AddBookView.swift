@@ -13,6 +13,12 @@ struct AddBookView: View {
     
     let genres = ["Fantasy", "Horror", "Kids", "Mystery", "Poetry", "Romance", "Thriller"]
     
+    var isValid: Bool {
+        if (title.isEmpty || author.isEmpty || genre.isEmpty) {
+            return false
+        }
+        return true
+    }
     
     var body: some View {
         NavigationStack {
@@ -40,6 +46,7 @@ struct AddBookView: View {
                         modelContext.insert(newBook)
                         dismiss()
                     }
+                    .disabled(isValid == false)
                 }
             }
             .navigationTitle("Add Book")
