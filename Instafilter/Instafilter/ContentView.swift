@@ -36,25 +36,29 @@ struct ContentView: View {
                 
                 Spacer()
                 
-                HStack {
-                    Text("Intensity")
-                    Slider(value: $filterIntensity)
-                        .onChange(of: filterIntensity, applyProcessing)
-                        .disabled(selectedItem == nil)
-                }
-                
-                HStack {
-                    Text("Radius")
-                    Slider(value: $filterRadius)
-                        .onChange(of: filterRadius, applyProcessing)
-                        .disabled(selectedItem == nil)
-                }
-                
-                HStack {
-                    Text("Scale")
-                    Slider(value: $filterScale)
-                        .onChange(of: filterScale, applyProcessing)
-                        .disabled(selectedItem == nil)
+                VStack {
+                    
+                    
+                    HStack {
+                        Text("Intensity")
+                        Slider(value: $filterIntensity)
+                            .onChange(of: filterIntensity, applyProcessing)
+                            .disabled(selectedItem == nil)
+                    }
+                    
+                    HStack {
+                        Text("Radius")
+                        Slider(value: $filterRadius)
+                            .onChange(of: filterRadius, applyProcessing)
+                            .disabled(selectedItem == nil)
+                    }
+                    
+                    HStack {
+                        Text("Scale")
+                        Slider(value: $filterScale)
+                            .onChange(of: filterScale, applyProcessing)
+                            .disabled(selectedItem == nil)
+                    }
                 }
                 .padding(.vertical)
                 
@@ -96,7 +100,7 @@ struct ContentView: View {
         loadImage()
         
         filterCount += 1
-
+        
         if filterCount >= 20 {
             requestReview()
         }
@@ -115,14 +119,14 @@ struct ContentView: View {
     
     func applyProcessing() {
         let inputKeys = currentFilter.inputKeys
-
+        
         if inputKeys.contains(kCIInputIntensityKey) { currentFilter.setValue(filterIntensity, forKey: kCIInputIntensityKey) }
         if inputKeys.contains(kCIInputRadiusKey) { currentFilter.setValue(filterRadius * 200, forKey: kCIInputRadiusKey) }
         if inputKeys.contains(kCIInputScaleKey) { currentFilter.setValue(filterScale * 10, forKey: kCIInputScaleKey) }
-
+        
         guard let outputImage = currentFilter.outputImage else { return }
         guard let cgImage = context.createCGImage(outputImage, from: outputImage.extent) else { return }
-
+        
         let uiImage = UIImage(cgImage: cgImage)
         processedImage = Image(uiImage: uiImage)
     }
