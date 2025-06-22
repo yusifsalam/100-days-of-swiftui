@@ -1,46 +1,40 @@
+import PhotosUI
 import SwiftUI
-import CoreImage
-import CoreImage.CIFilterBuiltins
+import StoreKit
+
 
 struct ContentView: View {
-    @State private var image: Image?
+    @Environment(\.requestReview) var requestReview
+    
+    @State private var pickerItem: PhotosPickerItem?
+    @State private var selectedImage: Image?
     
     var body: some View {
+        
         VStack {
-            image?
+            let example = Image(.example)
+
+            ShareLink(item: example, preview: SharePreview("Singapore Airport", image: example)) {
+                Label("Click to share", systemImage: "airplane")
+            }
+            Button("Leave a review") {
+                requestReview()
+            }
+
+            PhotosPicker(selection: $pickerItem, matching: .images) {
+                Label("Select a picture", systemImage: "photo")
+            }
+            selectedImage?
                 .resizable()
                 .scaledToFit()
         }
-        .onAppear(perform: loadImage)
+        .onChange(of: pickerItem) {
+            Task {
+                selectedImage = try await pickerItem?.loadTransferable(type: Image.self)
+            }
+        }
     }
     
-    func loadImage() {
-        let inputImage = UIImage(resource: .example)
-        let beginImage = CIImage(image: inputImage)
-        let context = CIContext()
-        let currentFilter = CIFilter.twirlDistortion()
-        currentFilter.inputImage = beginImage
-
-        let amount = 1.0
-
-        let inputKeys = currentFilter.inputKeys
-
-        if inputKeys.contains(kCIInputIntensityKey) {
-            currentFilter.setValue(amount, forKey: kCIInputIntensityKey) }
-        if inputKeys.contains(kCIInputRadiusKey) { currentFilter.setValue(amount * 200, forKey: kCIInputRadiusKey) }
-        if inputKeys.contains(kCIInputScaleKey) { currentFilter.setValue(amount * 10, forKey: kCIInputScaleKey) }
-        // get a CIImage from our filter or exit if that fails
-        guard let outputImage = currentFilter.outputImage else { return }
-
-        // attempt to get a CGImage from our CIImage
-        guard let cgImage = context.createCGImage(outputImage, from: outputImage.extent) else { return }
-
-        // convert that to a UIImage
-        let uiImage = UIImage(cgImage: cgImage)
-
-        // and convert that to a SwiftUI image
-        image = Image(uiImage: uiImage)
-    }
 }
 
 #Preview {
