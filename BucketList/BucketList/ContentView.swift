@@ -1,67 +1,96 @@
+import LocalAuthentication
+import MapKit
 import SwiftUI
 
-struct User: Identifiable, Comparable {
+struct Location: Identifiable {
     let id = UUID()
-    var firstName: String
-    var lastName: String
-
-    static func <(lhs: User, rhs: User) -> Bool {
-        lhs.lastName < rhs.lastName
-    }
-}
-
-enum LoadingState {
-    case loading, success, failed
-}
-
-struct LoadingView: View {
-    var body: some View {
-        Text("Loading...")
-    }
-}
-
-struct SuccessView: View {
-    var body: some View {
-        Text("Success!")
-    }
-}
-
-struct FailedView: View {
-    var body: some View {
-        Text("Failed.")
-    }
+    var name: String
+    var coordinate: CLLocationCoordinate2D
 }
 
 struct ContentView: View {
-    @State private var loadingState = LoadingState.loading
-    let users = [
-        User(firstName: "Arnold", lastName: "Rimmer"),
-        User(firstName: "Kristine", lastName: "Kochanski"),
-        User(firstName: "David", lastName: "Lister"),
-    ].sorted()
-
+    @State private var isUnlocked = false
+    @State private var position = MapCameraPosition.region(
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 51.507222, longitude: -0.1275),
+            span: MKCoordinateSpan(latitudeDelta: 1, longitudeDelta: 1)
+        )
+    )
+    let locations = [
+        Location(name: "Buckingham Palace", coordinate: CLLocationCoordinate2D(latitude: 51.501, longitude: -0.141)),
+        Location(name: "Tower of London", coordinate: CLLocationCoordinate2D(latitude: 51.508, longitude: -0.076))
+    ]
     var body: some View {
-        if loadingState == .loading {
-            LoadingView()
-        } else if loadingState == .success {
-            SuccessView()
-        } else if loadingState == .failed {
-            FailedView()
-        }
-        List(users) { user in
-            Text("\(user.lastName), \(user.firstName)")
-        }
-        Button("Read and Write") {
-            let data = Data("Test Message".utf8)
-            let url = URL.documentsDirectory.appending(path: "message.txt")
-
-            do {
-                try data.write(to: url, options: [.atomic, .completeFileProtection])
-                let input = try String(contentsOf: url, encoding: .utf8)
-                print(input)
-            } catch {
-                print(error.localizedDescription)
+        VStack {
+            if isUnlocked {
+                
+                MapReader { proxy in
+                    Map {
+                        ForEach(locations) { location in
+                            Annotation(location.name, coordinate: location.coordinate) {
+                                Text(location.name)
+                                    .font(.headline)
+                                    .padding()
+                                    .background(.blue)
+                                    .foregroundStyle(.white)
+                                    .clipShape(.capsule)
+                            }
+                            .annotationTitles(.hidden)
+                        }
+                    }
+                    .onTapGesture { position in
+                        if let coordinate = proxy.convert(position, from: .local) {
+                            print(coordinate)
+                        }
+                    }
+                }
+                
+                
+                HStack(spacing: 50) {
+                    Button("Paris") {
+                        position = MapCameraPosition.region(
+                            MKCoordinateRegion(
+                                center: CLLocationCoordinate2D(latitude: 48.8566, longitude: 2.3522),
+                                span: MKCoordinateSpan(latitudeDelta: 1, longitudeDelta: 1)
+                            )
+                        )
+                    }
+                    
+                    Button("Tokyo") {
+                        position = MapCameraPosition.region(
+                            MKCoordinateRegion(
+                                center: CLLocationCoordinate2D(latitude: 35.6897, longitude: 139.6922),
+                                span: MKCoordinateSpan(latitudeDelta: 1, longitudeDelta: 1)
+                            )
+                        )
+                    }
+                }
+            } else {
+                Text("Locked")
             }
+        }
+        .onAppear(perform: authenticate)
+    }
+    
+    func authenticate() {
+        let context = LAContext()
+        var error: NSError?
+        
+        // check whether biometric authentication is possible
+        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+            // it's possible, so go ahead and use it
+            let reason = "We need to unlock your data."
+            
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, authenticationError in
+                // authentication has now completed
+                if success {
+                    isUnlocked = true
+                } else {
+                    // there was a problem
+                }
+            }
+        } else {
+            // no biometrics
         }
     }
 }
