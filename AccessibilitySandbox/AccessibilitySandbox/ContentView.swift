@@ -52,6 +52,11 @@ struct ContentView: View {
                     .scaledToFit()
             }
             .accessibilityLabel(labels[selectedPicture])
+            
+            Button("John Fitzgerald Kennedy") {
+                print("Button tapped")
+            }
+            .accessibilityInputLabels(["John Fitzgerald Kennedy", "Kennedy", "JFK"])
         }
         
     }
