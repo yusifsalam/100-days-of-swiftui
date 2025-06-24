@@ -1,12 +1,20 @@
 import CoreLocation
+import SwiftUI
 import Foundation
 import LocalAuthentication
 import MapKit
 
+enum AuthState {
+    case locked
+    case unlocked
+    case failed
+    case unsupported
+}
+
 extension ContentView {
     @Observable
     class ViewModel {
-        var isUnlocked = false
+        var authState: AuthState = .locked
         private(set) var locations: [Location]
         var selectedPlace: Location?
         let savePath = URL.documentsDirectory.appending(path: "SavedPlaces")
@@ -54,13 +62,15 @@ extension ContentView {
                 context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, authenticationError in
 
                     if success {
-                        self.isUnlocked = true
+                        self.authState = .unlocked
                     } else {
                         // error
+                        self.authState = .failed
                     }
                 }
             } else {
                 // no biometrics
+                self.authState = .unsupported
             }
         }
     }
