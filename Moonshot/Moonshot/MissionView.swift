@@ -32,8 +32,10 @@ struct MissionView: View {
                         width * 0.6
                     }
                     .padding(.top)
+                    .accessibilityLabel("Logo of \(mission.displayName)")
                 Text(mission.formattedLaunchDate)
                     .font(.caption)
+                    .accessibilityLabel("Launch date \(mission.formattedLaunchDate)")
                 
                 VStack(alignment: .leading) {
                     Rectangle()

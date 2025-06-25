@@ -9,6 +9,7 @@ struct AstronautView: View {
                 Image(astronaut.id)
                     .resizable()
                     .scaledToFit()
+                    .accessibilityLabel("Portrait of \(astronaut.name)")
                 
                 Text(astronaut.description)
                     .padding()
