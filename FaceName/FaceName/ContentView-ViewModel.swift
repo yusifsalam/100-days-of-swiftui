@@ -13,6 +13,7 @@ extension ContentView {
             do {
                 let data = try Data(contentsOf: savePath)
                 people = try JSONDecoder().decode([Person].self, from: data)
+                print("Loaded people: \(people)")
             } catch {
                 people = []
             }

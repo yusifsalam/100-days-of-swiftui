@@ -4,6 +4,7 @@ import SwiftUI
 struct EditForm: View {
     @Environment(\.dismiss) var dismiss
     var onSave: (Person) -> Void
+    let locationFetcher = LocationFetcher()
     @State private var selectedItem: PhotosPickerItem?
     @State private var imageData: Data?
     @State private var processedImage: Image?
@@ -36,7 +37,8 @@ struct EditForm: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        let person = Person(name: name, photo: imageData!)
+                        let location = locationFetcher.lastKnownLocation ?? CLLocationCoordinate2D(latitude: 60.17, longitude: 24.94)
+                        let person = Person(name: name, photo: imageData!, latitude: location.latitude, longitude: location.longitude)
                         onSave(person)
                         dismiss()
                     }
@@ -44,6 +46,7 @@ struct EditForm: View {
                 }
             }
         }
+        .onAppear(perform: locationFetcher.start)
     }
     
     func loadImage() {
