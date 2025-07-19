@@ -142,6 +142,9 @@ struct ContentView: View {
             cardToInsert.id = UUID()
             cards.insert(cardToInsert, at: 0)
         }
+        if cards.isEmpty {
+            isActive = false
+        }
     }
     
     
