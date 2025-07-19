@@ -1,7 +1,9 @@
 import SwiftUI
 
 extension View {
-    func stacked(at position: Int, in total: Int) -> some View {
+    func stacked(for card: Card, cards allCards: [Card]) -> some View {
+        let position = allCards.firstIndex(of: card) ?? 0
+        let total = allCards.count
         let offset = Double(total - position)
         return self.offset(y: offset * 10)
     }
@@ -31,15 +33,17 @@ struct ContentView: View {
                     .background(.black.opacity(0.75))
                     .clipShape(.capsule)
                 ZStack {
-                    ForEach(Array(cards.enumerated()), id: \.offset) { index, card in
-                        CardView(card: card) {
+                    ForEach(cards) { card in
+                        CardView(card: card) { isCorrect in
                             withAnimation {
-                                removeCard(at: index)
+                                removeCard(card: card, isCorrect: isCorrect)
                             }
                         }
-                        .stacked(at: index, in: cards.count)
-                        .allowsHitTesting(index == cards.count - 1)
-                        .accessibilityHidden(index < cards.count - 1)
+                        .stacked(for: card, cards: cards)
+                        .allowsHitTesting(card.id == cards.last?.id)
+                        .accessibilityHidden(card.id != cards.last?.id)
+//                        .allowsHitTesting(cards.firstIndex(of: card) == cards.count - 1)
+//                        .accessibilityHidden(cards.firstIndex(of: card) < cards.count - 1)
                     }
                 }
                 .allowsHitTesting(timeRemaining > 0)
@@ -56,7 +60,7 @@ struct ContentView: View {
             VStack {
                 HStack {
                     Spacer()
-
+                    
                     Button {
                         showingEditScreen = true
                     } label: {
@@ -66,51 +70,51 @@ struct ContentView: View {
                             .clipShape(.circle)
                     }
                 }
-
+                
                 Spacer()
             }
             .foregroundStyle(.white)
             .font(.largeTitle)
             .padding()
             
-            if accessibilityDifferentiateWithoutColor || accessibilityVoiceOverEnabled {
-                VStack {
-                    Spacer()
-                    
-                    HStack {
-                        Button {
-                            withAnimation {
-                                removeCard(at: cards.count - 1)
-                            }
-                        } label: {
-                            Image(systemName: "xmark.circle")
-                                .padding()
-                                .background(.black.opacity(0.7))
-                                .clipShape(.circle)
-                        }
-                        .accessibilityLabel("Wrong")
-                        .accessibilityHint("Mark your answer as being incorrect.")
-                        
-                        Spacer()
-                        
-                        Button {
-                            withAnimation {
-                                removeCard(at: cards.count - 1)
-                            }
-                        } label: {
-                            Image(systemName: "checkmark.circle")
-                                .padding()
-                                .background(.black.opacity(0.7))
-                                .clipShape(.circle)
-                        }
-                        .accessibilityLabel("Correct")
-                        .accessibilityHint("Mark your answer as being correct.")
-                    }
-                    .foregroundStyle(.white)
-                    .font(.largeTitle)
-                    .padding()
-                }
-            }
+//            if accessibilityDifferentiateWithoutColor || accessibilityVoiceOverEnabled {
+//                VStack {
+//                    Spacer()
+//                    
+//                    HStack {
+//                        Button {
+//                            withAnimation {
+//                                removeCard(at: cards.count - 1)
+//                            }
+//                        } label: {
+//                            Image(systemName: "xmark.circle")
+//                                .padding()
+//                                .background(.black.opacity(0.7))
+//                                .clipShape(.circle)
+//                        }
+//                        .accessibilityLabel("Wrong")
+//                        .accessibilityHint("Mark your answer as being incorrect.")
+//                        
+//                        Spacer()
+//                        
+//                        Button {
+//                            withAnimation {
+//                                removeCard(at: cards.count - 1)
+//                            }
+//                        } label: {
+//                            Image(systemName: "checkmark.circle")
+//                                .padding()
+//                                .background(.black.opacity(0.7))
+//                                .clipShape(.circle)
+//                        }
+//                        .accessibilityLabel("Correct")
+//                        .accessibilityHint("Mark your answer as being correct.")
+//                    }
+//                    .foregroundStyle(.white)
+//                    .font(.largeTitle)
+//                    .padding()
+//                }
+//            }
         }
         .sheet(isPresented: $showingEditScreen, onDismiss: resetCards, content: EditCards.init)
         .onAppear(perform: resetCards)
@@ -132,18 +136,25 @@ struct ContentView: View {
         }
     }
     
-    func removeCard(at index: Int) {
-        guard index >= 0 else { return }
+    func removeCard(card: Card, isCorrect: Bool) {
+        guard let index = getCardIndex(card) else { return }
         cards.remove(at: index)
-        if cards.isEmpty {
-            isActive = false
+        if !isCorrect {
+            var cardToInsert = card
+            cardToInsert.id = UUID()
+            cards.insert(cardToInsert, at: 0)
         }
     }
+    
     
     func resetCards() {
         timeRemaining = 100
         isActive = true
         loadData()
+    }
+    
+    func getCardIndex(_ card: Card) -> Int? {
+        return cards.lastIndex(where: { $0.id == card.id })
     }
     
     func loadData() {
@@ -153,6 +164,8 @@ struct ContentView: View {
             }
         }
     }
+    
+    
     
 }
 

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CardView: View {
     let card: Card
-    var removal: (() -> Void)? = nil
+    var removal: ((_ isCorrect: Bool) -> Void)? = nil
     @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor
     @Environment(\.accessibilityVoiceOverEnabled) var accessibilityVoiceOverEnabled
     @State private var isShowingAnswer = false
@@ -58,7 +58,7 @@ struct CardView: View {
                 }
                 .onEnded { _ in
                     if abs(offset.width) > 100 {
-                        removal?()
+                        removal?(offset.width > 0)
                     } else {
                         offset = .zero
                     }
