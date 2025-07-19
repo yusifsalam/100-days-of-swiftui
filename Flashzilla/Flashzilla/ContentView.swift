@@ -31,8 +31,8 @@ struct ContentView: View {
                     .background(.black.opacity(0.75))
                     .clipShape(.capsule)
                 ZStack {
-                    ForEach(0..<cards.count, id: \.self) { index in
-                        CardView(card: cards[index]) {
+                    ForEach(Array(cards.enumerated()), id: \.offset) { index, card in
+                        CardView(card: card) {
                             withAnimation {
                                 removeCard(at: index)
                             }
