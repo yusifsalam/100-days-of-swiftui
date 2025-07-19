@@ -42,8 +42,6 @@ struct ContentView: View {
                         .stacked(for: card, cards: cards)
                         .allowsHitTesting(card.id == cards.last?.id)
                         .accessibilityHidden(card.id != cards.last?.id)
-//                        .allowsHitTesting(cards.firstIndex(of: card) == cards.count - 1)
-//                        .accessibilityHidden(cards.firstIndex(of: card) < cards.count - 1)
                     }
                 }
                 .allowsHitTesting(timeRemaining > 0)
@@ -77,44 +75,44 @@ struct ContentView: View {
             .font(.largeTitle)
             .padding()
             
-//            if accessibilityDifferentiateWithoutColor || accessibilityVoiceOverEnabled {
-//                VStack {
-//                    Spacer()
-//                    
-//                    HStack {
-//                        Button {
-//                            withAnimation {
-//                                removeCard(at: cards.count - 1)
-//                            }
-//                        } label: {
-//                            Image(systemName: "xmark.circle")
-//                                .padding()
-//                                .background(.black.opacity(0.7))
-//                                .clipShape(.circle)
-//                        }
-//                        .accessibilityLabel("Wrong")
-//                        .accessibilityHint("Mark your answer as being incorrect.")
-//                        
-//                        Spacer()
-//                        
-//                        Button {
-//                            withAnimation {
-//                                removeCard(at: cards.count - 1)
-//                            }
-//                        } label: {
-//                            Image(systemName: "checkmark.circle")
-//                                .padding()
-//                                .background(.black.opacity(0.7))
-//                                .clipShape(.circle)
-//                        }
-//                        .accessibilityLabel("Correct")
-//                        .accessibilityHint("Mark your answer as being correct.")
-//                    }
-//                    .foregroundStyle(.white)
-//                    .font(.largeTitle)
-//                    .padding()
-//                }
-//            }
+            if accessibilityDifferentiateWithoutColor || accessibilityVoiceOverEnabled {
+                VStack {
+                    Spacer()
+                    
+                    HStack {
+                        Button {
+                            withAnimation {
+                                removeCard(card: cards.last!, isCorrect: false)
+                            }
+                        } label: {
+                            Image(systemName: "xmark.circle")
+                                .padding()
+                                .background(.black.opacity(0.7))
+                                .clipShape(.circle)
+                        }
+                        .accessibilityLabel("Wrong")
+                        .accessibilityHint("Mark your answer as being incorrect.")
+                        
+                        Spacer()
+                        
+                        Button {
+                            withAnimation {
+                                removeCard(card: cards.last!, isCorrect: true)
+                            }
+                        } label: {
+                            Image(systemName: "checkmark.circle")
+                                .padding()
+                                .background(.black.opacity(0.7))
+                                .clipShape(.circle)
+                        }
+                        .accessibilityLabel("Correct")
+                        .accessibilityHint("Mark your answer as being correct.")
+                    }
+                    .foregroundStyle(.white)
+                    .font(.largeTitle)
+                    .padding()
+                }
+            }
         }
         .sheet(isPresented: $showingEditScreen, onDismiss: resetCards, content: EditCards.init)
         .onAppear(perform: resetCards)
