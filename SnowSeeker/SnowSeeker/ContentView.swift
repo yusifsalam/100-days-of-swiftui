@@ -1,35 +1,41 @@
 import SwiftUI
 
-struct UserView: View {
-    var body: some View {
-        Group {
-            Text("Name: Paul")
-            Text("Country: England")
-            Text("Pets: Luna and Arya")
-        }
-        .font(.title)
-    }
-}
 
 struct ContentView: View {
-    @State private var searchText = ""
-    let allNames = ["Subh", "Vina", "Melvin", "Stefanie"]
-
-    var filteredNames: [String] {
-        if searchText.isEmpty {
-            allNames
-        } else {
-            allNames.filter { $0.localizedStandardContains(searchText) }
-        }
-    }
+    let resorts: [Resort] = Bundle.main.decode("resorts.json")
 
     var body: some View {
-        NavigationStack {
-            List(filteredNames, id: \.self) { name in
-                Text(name)
+        NavigationSplitView {
+            List(resorts) { resort in
+                NavigationLink(value: resort) {
+                    HStack {
+                        Image(resort.country)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 40, height: 25)
+                            .clipShape(
+                                .rect(cornerRadius: 5)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 5)
+                                    .stroke(.black, lineWidth: 1)
+                            )
+
+                        VStack(alignment: .leading) {
+                            Text(resort.name)
+                                .font(.headline)
+                            Text("\(resort.runs) runs")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
             }
-            .searchable(text: $searchText, prompt: "Look for something")
-            .navigationTitle("Searching")
+            .navigationTitle("Resorts")
+            .navigationDestination(for: Resort.self) { resort in
+                    ResortView(resort: resort)
+            }
+        } detail: {
+            WelcomeView()
         }
     }
 }
